@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaChat — Modern AI Chat</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #080b12;
+    --panel: #10141d;
+    --panel2: #151a24;
+    --border: rgba(255,255,255,.08);
+    --text: #f5f7fb;
+    --muted: #8e98aa;
+    --accent: #7c5cff;
+    --accent2: #00d4ff;
+    --user: linear-gradient(135deg,#7456ff,#4b8cff);
+    --input: #141923;
+}
+
+body.light {
+    --bg: #f3f5f9;
+    --panel: #ffffff;
+    --panel2: #f7f8fb;
+    --border: rgba(0,0,0,.08);
+    --text: #151823;
+    --muted: #687080;
+    --input: #eef1f6;
+}
+
+body {
+    font-family: Inter, Arial, sans-serif;
+    background:
+        radial-gradient(circle at 80% 10%, rgba(124,92,255,.13), transparent 30%),
+        radial-gradient(circle at 20% 90%, rgba(0,212,255,.08), transparent 25%),
+        var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* APP */
+
+.app {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 285px;
+    background: rgba(16,20,29,.88);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    transition: .3s;
+    z-index: 20;
+}
+
+body.light .sidebar {
+    background: rgba(255,255,255,.88);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 22px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    font-size: 21px;
+    background: linear-gradient(135deg,#7c5cff,#00d4ff);
+    box-shadow: 0 8px 30px rgba(124,92,255,.3);
+}
+
+.logo h2 {
+    font-size: 19px;
+}
+
+.logo span {
+    color: var(--accent2);
+}
+
+.new-chat {
+    width: 100%;
+    border: 0;
+    padding: 13px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,#7657ff,#5d83ff);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: .2s;
+}
+
+.new-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(100,80,255,.25);
+}
+
+.search {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.search input {
+    width: 100%;
+    padding: 11px 12px 11px 38px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 11px;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    color: var(--muted);
+}
+
+.section-title {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 5px 4px 10px;
+}
+
+.chat-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.chat-item {
+    padding: 12px;
+    border-radius: 11px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: .2s;
+}
+
+.chat-item:hover,
+.chat-item.active {
+    background: rgba(124,92,255,.12);
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg,#5d4bdb,#00a6c7);
+    flex-shrink: 0;
+}
+
+.chat-info {
+    min-width: 0;
+}
+
+.chat-info strong {
+    display: block;
+    font-size: 13px;
+}
+
+.chat-info p {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile {
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#ff7a59,#ff3d81);
+    display: grid;
+    place-items: center;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info strong {
+    font-size: 13px;
+}
+
+.profile-info p {
+    color: #45d483;
+    font-size: 11px;
+}
+
+.settings {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* MAIN */
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* HEADER */
+
+.header {
+    height: 72px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    backdrop-filter: blur(15px);
+    background: rgba(8,11,18,.45);
+}
+
+body.light .header {
+    background: rgba(255,255,255,.6);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu {
+    display: none;
+    background: none;
+    border: 0;
+    color: var(--text);
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,#7456ff,#00d4ff);
+    display: grid;
+    place-items: center;
+}
+
+.header-title strong {
+    display: block;
+    font-size: 14px;
+}
+
+.header-title span {
+    color: #45d483;
+    font-size: 11px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    transition: .2s;
+}
+
+.icon-btn:hover {
+    color: var(--text);
+    border-color: rgba(124,92,255,.5);
+}
+
+/* CHAT */
+
+.chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 8%;
+    scroll-behavior: smooth;
+}
+
+.welcome {
+    text-align: center;
+    max-width: 650px;
+    margin: 70px auto 35px;
+}
+
+.welcome-icon {
+    width: 75px;
+    height: 75px;
+    margin: auto;
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    font-size: 34px;
+    background: linear-gradient(135deg,#7456ff,#00d4ff);
+    box-shadow: 0 15px 50px rgba(124,92,255,.25);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.welcome h1 {
+    margin-top: 20px;
+    font-size: 30px;
+}
+
+.gradient {
+    background: linear-gradient(90deg,#8b70ff,#00d4ff);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.welcome p {
+    color: var(--muted);
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.messages {
+    max-width: 850px;
+    margin: auto;
+}
+
+.message {
+    display: flex;
+    gap: 12px;
+    margin: 24px 0;
+    animation: messageIn .3s ease;
+}
+
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.bubble {
+    max-width: 75%;
+    padding: 13px 16px;
+    border-radius: 15px;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.message.ai .bubble {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-top-left-radius: 5px;
+}
+
+.message.user .bubble {
+    background: var(--user);
+    color: white;
+    border-top-right-radius: 5px;
+}
+
+.time {
+    display: block;
+    font-size: 9px;
+    opacity: .55;
+    margin-top: 7px;
+}
+
+/* TYPING */
+
+.typing {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 15px auto;
+    max-width: 850px;
+}
+
+.typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: dots 1.2s infinite;
+}
+
+.typing span:nth-child(2) {
+    animation-delay: .15s;
+}
+
+.typing span:nth-child(3) {
+    animation-delay: .3s;
+}
+
+@keyframes dots {
+    0%,100% {
+        opacity: .3;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}
+
+/* INPUT */
+
+.input-area {
+    padding: 15px 8% 20px;
+}
+
+.input-box {
+    max-width: 850px;
+    margin: auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    padding: 9px;
+    box-shadow: 0 15px 50px rgba(0,0,0,.12);
+}
+
+.attach {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 19px;
+    cursor: pointer;
+}
+
+textarea {
+    flex: 1;
+    resize: none;
+    min-height: 38px;
+    max-height: 120px;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--text);
+    padding: 9px 4px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.send {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    color: white;
+    background: linear-gradient(135deg,#7456ff,#00a9ff);
+    cursor: pointer;
+    font-size: 18px;
+    transition: .2s;
+}
+
+.send:hover {
+    transform: scale(1.05);
+}
+
+.disclaimer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 8px;
+}
+
+/* MOBILE */
+
+@media(max-width: 800px) {
+    .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        bottom: 0;
+        box-shadow: 20px 0 50px rgba(0,0,0,.3);
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .menu {
+        display: block;
+    }
+
+    .header {
+        padding: 0 15px;
+    }
+
+    .header-actions .hide-mobile {
+        display: none;
+    }
+
+    .chat-area {
+        padding: 20px 15px;
+    }
+
+    .input-area {
+        padding: 10px 12px 15px;
+    }
+
+    .welcome {
+        margin-top: 40px;
+    }
+
+    .welcome h1 {
+        font-size: 25px;
+    }
+
+    .bubble {
+        max-width: 86%;
+    }
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(130,130,150,.3);
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">✦</div>
+            <h2>Nova<span>Chat</span></h2>
+        </div>
+
+        <button class="new-chat" onclick="newChat()">
+            ＋ New Conversation
+        </button>
+
+        <div class="search">
+            <span class="search-icon">⌕</span>
+            <input id="searchInput"
+                   type="text"
+                   placeholder="Search conversations..."
+                   oninput="searchChats()">
+        </div>
+
+        <div class="section-title">Recent Chats</div>
+
+        <div class="chat-list" id="chatList">
+
+            <div class="chat-item active">
+                <div class="avatar">🤖</div>
+                <div class="chat-info">
+                    <strong>AI Assistant</strong>
+                    <p>How can I help you today?</p>
+                </div>
+            </div>
+
+            <div class="chat-item">
+                <div class="avatar">💻</div>
+                <div class="chat-info">
+                    <strong>Web Development</strong>
+                    <p>Modern website ideas</p>
+                </div>
+            </div>
+
+            <div class="chat-item">
+                <div class="avatar">📚</div>
+                <div class="chat-info">
+                    <strong>Study Assistant</strong>
+                    <p>Explain machine learning</p>
+                </div>
+            </div>
+
+            <div class="chat-item">
+                <div class="avatar">🚀</div>
+                <div class="chat-info">
+                    <strong>Project Ideas</strong>
+                    <p>Final year project ideas</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="profile">
+            <div class="profile-avatar">👤</div>
+
+            <div class="profile-info">
+                <strong>My Account</strong>
+                <p>● Online</p>
+            </div>
+
+            <button class="settings">⚙</button>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CHAT -->
+    <main class="main">
+
+        <header class="header">
+
+            <div class="header-left">
+
+                <button class="menu" onclick="toggleSidebar()">☰</button>
+
+                <div class="header-avatar">🤖</div>
+
+                <div class="header-title">
+                    <strong>Nova AI</strong>
+                    <span>● Online</span>
+                </div>
+
+            </div>
+
+            <div class="header-actions">
+
+                <button class="icon-btn hide-mobile" title="Search">
+                    ⌕
+                </button>
+
+                <button class="icon-btn" onclick="toggleTheme()" title="Theme">
+                    ◐
+                </button>
+
+                <button class="icon-btn" title="More">
+                    ⋮
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- CHAT AREA -->
+
+        <section class="chat-area" id="chatArea">
+
+            <div class="welcome" id="welcome">
+
+                <div class="welcome-icon">✦</div>
+
+                <h1>
+                    Welcome to <span class="gradient">NovaChat</span>
+                </h1>
+
+                <p>
+                    Your intelligent conversation space.
+                    Ask questions, brainstorm ideas,
+                    learn new things and build amazing projects.
+                </p>
+
+            </div>
+
+            <div class="messages" id="messages">
+
+                <div class="message ai">
+
+                    <div class="message-avatar">🤖</div>
+
+                    <div class="bubble">
+                        Hello! 👋 I'm Nova, your AI assistant.
+                        <br><br>
+                        What would you like to work on today?
+
+                        <span class="time">Now</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="typing" id="typing">
+                <span></span>
+                <span></span>
+                <span></span>
+                Nova is typing...
+            </div>
+
+        </section>
+
+
+        <!-- INPUT -->
+
+        <div class="input-area">
+
+            <div class="input-box">
+
+                <button class="attach" title="Attach file">
+                    ＋
+                </button>
+
+                <textarea
+                    id="messageInput"
+                    placeholder="Message Nova..."
+                    rows="1"
+                    onkeydown="handleKey(event)"
+                    oninput="autoResize(this)">
+                </textarea>
+
+                <button class="send" onclick="sendMessage()">
+                    ➤
+                </button>
+
+            </div>
+
+            <div class="disclaimer">
+                NovaChat can make mistakes. Check important information.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+function sendMessage() {
+
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    const messages = document.getElementById("messages");
+    const welcome = document.getElementById("welcome");
+
+    welcome.style.display = "none";
+
+    // USER MESSAGE
+
+    const userMessage = document.createElement("div");
+
+    userMessage.className = "message user";
+
+    userMessage.innerHTML = `
+        <div class="bubble">
+            ${escapeHTML(text)}
+            <span class="time">Now</span>
+        </div>
+        <div class="message-avatar">👤</div>
+    `;
+
+    messages.appendChild(userMessage);
+
+    input.value = "";
+    input.style.height = "38px";
+
+    scrollBottom();
+
+    // TYPING
+
+    const typing = document.getElementById("typing");
+
+    typing.style.display = "flex";
+
+    scrollBottom();
+
+    setTimeout(() => {
+
+        typing.style.display = "none";
+
+        const aiMessage = document.createElement("div");
+
+        aiMessage.className = "message ai";
+
+        aiMessage.innerHTML = `
+            <div class="message-avatar">🤖</div>
+
+            <div class="bubble">
+                ${generateReply(text)}
+                <span class="time">Just now</span>
+            </div>
+        `;
+
+        messages.appendChild(aiMessage);
+
+        scrollBottom();
+
+    }, 1000);
+
+}
+
+
+/* =========================
+   AI REPLY SIMULATION
+========================= */
+
+function generateReply(message) {
+
+    const text = message.toLowerCase();
+
+    if (text.includes("hello") || text.includes("hi")) {
+        return "Hello! 👋 It's great to chat with you. How can I help?";
+    }
+
+    if (text.includes("website")) {
+        return "Absolutely! 🌐 I can help you design a modern website with HTML, CSS and JavaScript. Tell me what type of website you want to build.";
+    }
+
+    if (text.includes("project")) {
+        return "Great idea! 🚀 We can create projects such as AI assistants, student portals, cybersecurity tools, e-commerce websites or productivity apps.";
+    }
+
+    if (text.includes("python")) {
+        return "Python is a powerful programming language used for AI, machine learning, automation, web development and data analysis. 🐍";
+    }
+
+    if (text.includes("thank")) {
+        return "You're very welcome! 😊 I'm always happy to help.";
+    }
+
+    return "That's interesting! 💡 I understand your message. In a real AI-powered version, this section could connect to an AI API and generate a detailed response.";
+}
+
+
+/* =========================
+   ENTER KEY
+========================= */
+
+function handleKey(event) {
+
+    if (event.key === "Enter" && !event.shiftKey) {
+
+        event.preventDefault();
+
+        sendMessage();
+    }
+}
+
+
+/* =========================
+   AUTO RESIZE
+========================= */
+
+function autoResize(element) {
+
+    element.style.height = "auto";
+
+    element.style.height =
+        Math.min(element.scrollHeight, 120) + "px";
+}
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+/* =========================
+   SCROLL
+========================= */
+
+function scrollBottom() {
+
+    const area = document.getElementById("chatArea");
+
+    setTimeout(() => {
+
+        area.scrollTop = area.scrollHeight;
+
+    }, 50);
+}
+
+
+/* =========================
+   NEW CHAT
+========================= */
+
+function newChat() {
+
+    document.getElementById("messages").innerHTML = "";
+
+    document.getElementById("welcome").style.display = "block";
+
+    document.getElementById("messageInput").value = "";
+
+    document.getElementById("messageInput").focus();
+
+    if (window.innerWidth <= 800) {
+        document.getElementById("sidebar")
+            .classList.remove("open");
+    }
+}
+
+
+/* =========================
+   DARK / LIGHT MODE
+========================= */
+
+function toggleTheme() {
+
+    document.body.classList.toggle("light");
+
+    localStorage.setItem(
+        "theme",
+        document.body.classList.contains("light")
+            ? "light"
+            : "dark"
+    );
+}
+
+
+/* LOAD THEME */
+
+if (localStorage.getItem("theme") === "light") {
+
+    document.body.classList.add("light");
+
+}
+
+
+/* =========================
+   MOBILE SIDEBAR
+========================= */
+
+function toggleSidebar() {
+
+    document
+        .getElementById("sidebar")
+        .classList.toggle("open");
+
+}
+
+
+/* =========================
+   SEARCH CHATS
+========================= */
+
+function searchChats() {
+
+    const search =
+        document.getElementById("searchInput")
+        .value.toLowerCase();
+
+    const chats =
+        document.querySelectorAll(".chat-item");
+
+    chats.forEach(chat => {
+
+        const text =
+            chat.innerText.toLowerCase();
+
+        chat.style.display =
+            text.includes(search)
+                ? "flex"
+                : "none";
+
+    });
+
+}
+
+
+/* =========================
+   CHAT ITEM CLICK
+========================= */
+
+document.querySelectorAll(".chat-item")
+.forEach(item => {
+
+    item.addEventListener("click", function() {
+
+        document.querySelectorAll(".chat-item")
+        .forEach(i => i.classList.remove("active"));
+
+        this.classList.add("active");
+
+        if (window.innerWidth <= 800) {
+
+            document
+                .getElementById("sidebar")
+                .classList.remove("open");
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
